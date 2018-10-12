@@ -241,3 +241,11 @@ class Ball:
 	@property
 	def right(self):
 		return self.pos.x + self.radius
+
+
+class String:
+	def __init__(self):
+		self.forceConstant = 10	# Nm^-1
+		self.length = 10
+
+	

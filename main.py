@@ -2,7 +2,7 @@
 
 import pygame, math, sys
 from colours import *
-from objects import Vector, Ball, Point
+from objects import Vector, Ball, Point, String
 
 
 def main():
@@ -53,12 +53,14 @@ def main():
 
 	tickerPoints = []
 	MAX_TICKER_POINTS = 100
+	TICKER_PERIOD = 0.02
+	timeSinceLastTicker = 0
 
 	ball = Ball()
 	ball.setPos(Point(WIDTH/2, HEIGHT/2))
 	#ball.accelerate(Vector(10, math.pi/2))
 
-	stringLength = 2
+	string = String()
 	useString = False
 
 	while True:
@@ -86,7 +88,7 @@ def main():
 					mouseBallDist = moveData["currentPos"].distance(ball.pos)
 					if mouseBallDist > 0:
 						useString = not useString
-						stringLength = mouseBallDist
+						string.length = mouseBallDist
 
 			elif e.type == pygame.MOUSEBUTTONDOWN:
 				if e.button == 1:
@@ -127,7 +129,7 @@ def main():
 			stringVector = Vector()
 			mouseAccelTension = Vector()
 			antiVelocityVector = Vector()
-			if ballMouseDistance >= stringLength and useString:
+			if ballMouseDistance >= string.length and useString:
 				# String is taut
 				# We can work out angle between gravity and tension vector
 				# by creating a temporary vector for the string
@@ -143,12 +145,9 @@ def main():
 				antiVelocityMag = ballVelMag * math.cos(theta)
 				if antiVelocityMag > 0:
 					antiVelocityVector = Vector(antiVelocityMag, oppositeStringAngle)
-					#print(int(antiVelocityVector.dir/(math.pi*2)*360))
 					tensionVector = tensionVector + antiVelocityVector
 
 				# do tension created by movement
-				if mouseVelocity.mag > 0:
-					print(mouseVelocity.mag)
 				mouseAccelTensionMag = mouseVelocity.mag * math.cos(oppositeStringAngle - mouseVelocity.dir)
 				# this tension acts upon the ball along the oppositeStringAngle angle
 				mouseAccelTension = Vector(mouseAccelTensionMag, oppositeStringAngle)
@@ -173,17 +172,20 @@ def main():
 		else:
 			ball.move(deltaT)
 
-			if ballMouseDistance >= stringLength and useString:
+			if ballMouseDistance >= string.length and useString:
 				# test scale ball distance
-				distanceMod = stringLength/ballMouseDistance
+				distanceMod = string.length/ballMouseDistance
 				distancePoint = Point(distanceMod*(ball.pos.x-moveData["currentPos"].x), distanceMod*(ball.pos.y-moveData["currentPos"].y))
 				ball.setPos(moveData["currentPos"] + distancePoint)
 
 		# draw ticker tape
 		if not moveData["mouseHeld"]:
-			tickerPoints.append(Point(ball.pos))
-			if len(tickerPoints) > MAX_TICKER_POINTS:
-				del tickerPoints[0]
+			timeSinceLastTicker += deltaT
+			if timeSinceLastTicker >= TICKER_PERIOD:
+				tickerPoints.append(Point(ball.pos))
+				if len(tickerPoints) > MAX_TICKER_POINTS:
+					del tickerPoints[0]
+				timeSinceLastTicker = 0
 		else:
 			tickerPoints = []
 
@@ -208,14 +210,16 @@ def main():
 		font = pygame.font.SysFont("monospace", 15)
 		# render text
 		ballVelLabel = font.render("Ball velocity: {}ms-1".format(int(ball.velocity.mag)), 1, BLACK)
-		DISPLAY.blit(ballVelLabel, (10, 10))
+		DISPLAY.blit(ballVelLabel, (10, 30))
 		mouseVelLabel = font.render("Mouse velocity: {}ms-1".format(int(mouseVelocity.mag)), 1, BLACK)
-		DISPLAY.blit(mouseVelLabel, (10, 30))
+		DISPLAY.blit(mouseVelLabel, (10, 50))
+		fps = font.render("{}fps".format(int(CLOCK.get_fps())), 1, BLACK)
+		DISPLAY.blit(fps, (10, 10))
 		#	pygame.draw.line(DISPLAY, PURPLE, drawPos(moveData["currentPos"]), drawPos(moveData["currentPos"] + stringVector.endPos()), 2)
 		#	pygame.draw.circle(DISPLAY, PURPLE, drawPos(moveData["currentPos"]+stringVector.endPos()), 3, 3)
 
 		pygame.display.update()
-		CLOCK.tick(40)
+		CLOCK.tick(120)
 
 if __name__ == "__main__":
 	main()
