@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import pygame, math, sys
+import pygame, math, sys, os
 from colours import *
 from objects import Vector, Ball, Point, String
 
@@ -9,7 +9,7 @@ def main():
 	pygame.init()
 	SCREEN_WIDTH = 800
 	SCREEN_HEIGHT = 600
-	SCALE = 80	# pixels per meter
+	SCALE = 200	# pixels per meter
 	WIDTH = SCREEN_WIDTH/SCALE
 	HEIGHT = SCREEN_HEIGHT/SCALE
 
@@ -41,6 +41,10 @@ def main():
 			if showBall:
 				pygame.draw.circle(DISPLAY, colour, drawPos(start+(v/scale).endPos()), 3, 3)
 
+	personImage = pygame.image.load("person.jpg")
+	personRect = personImage.get_rect()
+	personImage = pygame.transform.scale(personImage, (int(personRect.width*(int(1.8*SCALE)/personRect.height)), int(1.8*SCALE)))
+
 	v1 = Vector(2, 3/2*math.pi)
 	v2 = Vector(3, 1/4*math.pi)
 
@@ -48,8 +52,10 @@ def main():
 		"lastPos": Point(),
 		"currentPos": Point(CENTRE.x, 0),
 		"lastScreenMousePos": Point(),
-		"mouseHeld": False
+		"mouseHeld": False,
+		"lastVelocity": Vector()
 	}
+	mouseVelocity = Vector()
 
 	tickerPoints = []
 	MAX_TICKER_POINTS = 100
@@ -109,9 +115,12 @@ def main():
 			moveData["currentPos"] = moveData["currentPos"] - Point(0, keyboardMoveSpeed*deltaT)
 
 		if deltaT > 0:
+			moveData["lastVelocity"] = Vector(mouseVelocity)
 			mouseVelocity = Vector(((moveData["currentPos"]-moveData["lastPos"])/deltaT).pos())
+			mouseAcceleration = (mouseVelocity - moveData["lastVelocity"])/deltaT
 		else:
 			mouseVelocity = Vector()
+			mouseAcceleration = Vector()
 
 		if ball.bottom <= 0:
 			#if abs(ball.velocity.y) < 0.5:
@@ -178,6 +187,11 @@ def main():
 				distancePoint = Point(distanceMod*(ball.pos.x-moveData["currentPos"].x), distanceMod*(ball.pos.y-moveData["currentPos"].y))
 				ball.setPos(moveData["currentPos"] + distancePoint)
 
+		# === DRAW
+
+		# draw person
+		DISPLAY.blit(personImage, (-(1/3)*personImage.get_rect().width, SCREEN_HEIGHT-personImage.get_rect().height))
+
 		# draw ticker tape
 		if not moveData["mouseHeld"]:
 			timeSinceLastTicker += deltaT
@@ -209,14 +223,14 @@ def main():
 
 		font = pygame.font.SysFont("monospace", 15)
 		# render text
-		ballVelLabel = font.render("Ball velocity: {}ms-1".format(int(ball.velocity.mag)), 1, BLACK)
-		DISPLAY.blit(ballVelLabel, (10, 30))
-		mouseVelLabel = font.render("Mouse velocity: {}ms-1".format(int(mouseVelocity.mag)), 1, BLACK)
-		DISPLAY.blit(mouseVelLabel, (10, 50))
 		fps = font.render("{}fps".format(int(CLOCK.get_fps())), 1, BLACK)
 		DISPLAY.blit(fps, (10, 10))
-		#	pygame.draw.line(DISPLAY, PURPLE, drawPos(moveData["currentPos"]), drawPos(moveData["currentPos"] + stringVector.endPos()), 2)
-		#	pygame.draw.circle(DISPLAY, PURPLE, drawPos(moveData["currentPos"]+stringVector.endPos()), 3, 3)
+		ballVelLabel = font.render("Ball velocity: {:.2f}ms-1".format(ball.velocity.mag), 1, BLACK)
+		DISPLAY.blit(ballVelLabel, (10, 30))
+		mouseVelLabel = font.render("Mouse velocity: {:.2f}ms-1".format(mouseVelocity.mag), 1, BLACK)
+		DISPLAY.blit(mouseVelLabel, (10, 50))
+		antiVelLabel = font.render("Anti-velocity: {:.2f}ms-1".format(antiVelocityVector.mag), 1, BLACK)
+		DISPLAY.blit(antiVelLabel, (10, 70))
 
 		pygame.display.update()
 		CLOCK.tick(120)
