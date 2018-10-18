@@ -75,6 +75,8 @@ def main():
 	playerTwoGoal.pos = Point(WIDTH-0.5-playerTwoGoal.width, 3)
 	goals = [playerOneGoal, playerTwoGoal]
 
+	PLAYER_COLOURS = [BLUE, GREEN]
+
 	scores = [0, 0]
 
 	stringAmounts = [1, 1]
@@ -285,7 +287,7 @@ def main():
 		pygame.draw.polygon(DISPLAY, GREEN, p2GoalDrawPoints, 0)
 
 		# velocity vector is scaled so it can be more easily comprehended
-		drawVector(ball.velocity, ball.pos, 10, False, GREEN, 1)
+		# drawVector(ball.velocity, ball.pos, 10, False, GREEN, 1)
 
 		# draw ball
 		pygame.draw.circle(DISPLAY, RED, drawPos(ball.pos), int(ball.radius*SCALE), 1)
@@ -293,9 +295,10 @@ def main():
 		# draw tension vector
 		# drawVector(tensionVector, ball.pos, 10)
 
-		for p in players:
+		for i in range(len(players)):
+			p = players[i]
 			if p.string:
-				pygame.draw.line(DISPLAY, GREEN, drawPos(ball.pos), drawPos(p.pos), 1)
+				pygame.draw.line(DISPLAY, PLAYER_COLOURS[i], drawPos(ball.pos), drawPos(p.pos), 1)
 		
 		pygame.draw.circle(DISPLAY, BLUE, drawPos(playerOne.pos), 9, 0)
 		pygame.draw.circle(DISPLAY, GREEN, drawPos(playerTwo.pos), 9, 0)
