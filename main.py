@@ -45,9 +45,6 @@ def main():
 	personRect = personImage.get_rect()
 	personImage = pygame.transform.scale(personImage, (int(personRect.width*(int(1.8*SCALE)/personRect.height)), int(1.8*SCALE)))
 
-	v1 = Vector(2, 3/2*math.pi)
-	v2 = Vector(3, 1/4*math.pi)
-
 	moveData = {
 		"lastPos": Point(),
 		"currentPos": Point(CENTRE.x, 0),
@@ -128,9 +125,6 @@ def main():
 		mouseBall.setVelocity(mouseVelocity)
 
 		if ball.bottom <= 0:
-			#if abs(ball.velocity.y) < 0.5:
-				#ball.setVelocity(Vector((ball.velocity.x, 0)))
-				#ball.setPos(Point(ball.pos.x, ball.radius))
 			if ball.velocity.y < 0:
 				ball.accelerate(Vector((0, -ball.velocity.y-ball.velocity.y*ball.cor)))
 		else:
