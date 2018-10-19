@@ -201,6 +201,7 @@ class Ball:
 		self.mass = 0.1
 		self.radius = 0.1
 		self.cor = 0.8
+		self.moveable = True
 
 	def accelerate(self, a):
 		self.velocity += a
@@ -247,5 +248,75 @@ class String:
 	def __init__(self):
 		self.forceConstant = 10	# Nm^-1
 		self.length = 10
+		self.connections = []
+		self.active = False
 
+	def setConnections(self, a, b):
+		self.connections = [a, b]
+
+	def applyTension(self):
+		tensionVector = Vector()
+		stringVector = Vector()
+		for i in range(1,2):
+			a = self.connections[i]
+			b = self.connections[abs(i-1)]
+			connectionDist = a.pos.distance(b.pos)
+			#print("move" if a.moveable else "no")
+			if connectionDist >= self.length and self.active and a.moveable:
+				# String is taut
+				# We can work out angle between gravity and tension vector
+				# by creating a temporary vector for the string
+				stringVector = Vector((a.pos-b.pos).pos())
+				# tension acts on the ball towards the string pivot:
+				oppositeStringAngle = stringVector.dir - math.pi
+				tensionVector = Vector()
+
+				# calculate tension created by taut string against velocity
+				# away from string pivot
+				aVelMag = a.velocity.mag
+				aVelAngle = a.velocity.dir
+				theta = aVelAngle - stringVector.dir 
+				antiVelocityMag = aVelMag * math.cos(theta)
+				if antiVelocityMag > 0:
+					antiVelocityVector = Vector(antiVelocityMag, oppositeStringAngle)
+					tensionVector = tensionVector + antiVelocityVector
+
+				# do tension created by movement
+				bAccelTensionMag = b.velocity.mag * math.cos(oppositeStringAngle - b.velocity.dir)
+				# this tension acts upon the ball along the oppositeStringAngle angle
+				bAccelTension = Vector(bAccelTensionMag, oppositeStringAngle)
+				tensionVector = tensionVector + bAccelTension
+
+				tensionVector.normalizeDir()
+				a.accelerate(tensionVector)
+
+				if b.moveable:
+					# acceleration on b = F/m
+					# F = m of a * acc of a
+					f = a.mass * tensionVector.mag
+					bAccel = f / b.mass
+					b.accelerate(Vector(bAccel, stringVector.dir))
+
+		return tensionVector
+
+	def correctPositions(self):
+		if self.active:
+			if self.connections[1].moveable:
+				b = self.connections[0]
+				a = self.connections[1]
+			elif self.connections[0].moveable:
+				a = self.connections[0]
+				b = self.connections[1]
+			else:
+				return False
+
+			abDist = a.pos.distance(b.pos)
+			if abDist >= self.length:
+				distanceMod = self.length/abDist
+				distancePoint = Point(distanceMod*(a.pos.x-b.pos.x), distanceMod*(a.pos.y-b.pos.y))
+				#print(distanceMod)
+				a.setPos(b.pos + distancePoint)
+
+	def toggle(self):
+		self.active = not self.active
 	
