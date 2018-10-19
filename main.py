@@ -57,6 +57,9 @@ def main():
 	}
 	mouseVelocity = Vector()
 
+	mouseBall = Ball()
+	mouseBall.moveable = False
+
 	tickerPoints = []
 	MAX_TICKER_POINTS = 100
 	TICKER_PERIOD = 0.02
@@ -64,10 +67,10 @@ def main():
 
 	ball = Ball()
 	ball.setPos(Point(WIDTH/2, HEIGHT/2))
-	#ball.accelerate(Vector(10, math.pi/2))
 
 	string = String()
-	useString = False
+	string.setConnections(mouseBall, ball)
+	string.active = False
 
 	while True:
 		DISPLAY.fill(WHITE)
@@ -93,7 +96,7 @@ def main():
 				if (heldKeys[pygame.K_SPACE]):
 					mouseBallDist = moveData["currentPos"].distance(ball.pos)
 					if mouseBallDist > 0:
-						useString = not useString
+						string.toggle()
 						string.length = mouseBallDist
 
 			elif e.type == pygame.MOUSEBUTTONDOWN:
@@ -115,12 +118,14 @@ def main():
 			moveData["currentPos"] = moveData["currentPos"] - Point(0, keyboardMoveSpeed*deltaT)
 
 		if deltaT > 0:
-			moveData["lastVelocity"] = Vector(mouseVelocity)
+			moveData["lastVelocity"] = Vector(mouseBall.velocity)
 			mouseVelocity = Vector(((moveData["currentPos"]-moveData["lastPos"])/deltaT).pos())
 			mouseAcceleration = (mouseVelocity - moveData["lastVelocity"])/deltaT
 		else:
 			mouseVelocity = Vector()
 			mouseAcceleration = Vector()
+		mouseBall.setPos(moveData["currentPos"])
+		mouseBall.setVelocity(mouseVelocity)
 
 		if ball.bottom <= 0:
 			#if abs(ball.velocity.y) < 0.5:
@@ -129,42 +134,7 @@ def main():
 			if ball.velocity.y < 0:
 				ball.accelerate(Vector((0, -ball.velocity.y-ball.velocity.y*ball.cor)))
 		else:
-			ballMouseDistance = ball.pos.distance((moveData["currentPos"]))
-
 			ball.accelerate(Vector((0, -GRAVITY))*deltaT)
-
-			# for debug
-			tensionVector = Vector()
-			stringVector = Vector()
-			mouseAccelTension = Vector()
-			antiVelocityVector = Vector()
-			if ballMouseDistance >= string.length and useString:
-				# String is taut
-				# We can work out angle between gravity and tension vector
-				# by creating a temporary vector for the string
-				stringVector = Vector((ball.pos-moveData["currentPos"]).pos())
-				# tension acts on the ball towards the string pivot:
-				oppositeStringAngle = stringVector.dir - math.pi
-
-				# calculate tension created by taut string against velocity
-				# away from string pivot
-				ballVelMag = ball.velocity.mag
-				ballVelAngle = ball.velocity.dir
-				theta = ballVelAngle - stringVector.dir 
-				antiVelocityMag = ballVelMag * math.cos(theta)
-				if antiVelocityMag > 0:
-					antiVelocityVector = Vector(antiVelocityMag, oppositeStringAngle)
-					tensionVector = tensionVector + antiVelocityVector
-
-				# do tension created by movement
-				mouseAccelTensionMag = mouseVelocity.mag * math.cos(oppositeStringAngle - mouseVelocity.dir)
-				# this tension acts upon the ball along the oppositeStringAngle angle
-				mouseAccelTension = Vector(mouseAccelTensionMag, oppositeStringAngle)
-
-				tensionVector = tensionVector + mouseAccelTension
-
-				tensionVector.normalizeDir()
-				ball.accelerate(tensionVector)
 
 		if ball.left <= 0:
 			if ball.velocity.x < 0:
@@ -173,19 +143,16 @@ def main():
 		if ball.right >= WIDTH:
 			if ball.velocity.x > 0:
 				ball.accelerate(Vector((-ball.velocity.x-ball.velocity.x*ball.cor, 0)))
-
+			
+		string.applyTension()
 		
 		if moveData["mouseHeld"]:
 			ball.setPos(moveData["currentPos"])
-			ball.setVelocity(mouseVelocity)
+			ball.setVelocity(mouseBall.velocity)
 		else:
 			ball.move(deltaT)
 
-			if ballMouseDistance >= string.length and useString:
-				# test scale ball distance
-				distanceMod = string.length/ballMouseDistance
-				distancePoint = Point(distanceMod*(ball.pos.x-moveData["currentPos"].x), distanceMod*(ball.pos.y-moveData["currentPos"].y))
-				ball.setPos(moveData["currentPos"] + distancePoint)
+		string.correctPositions()
 
 		# === DRAW
 
@@ -207,7 +174,7 @@ def main():
 			pygame.draw.circle(DISPLAY, BLUE, drawPos(p), 2, 2)
 
 		# draw mouse velocity vector
-		drawVector(mouseVelocity, moveData["currentPos"], 20, False, BLUE)
+		drawVector(mouseBall.velocity, moveData["currentPos"], 20, False, BLUE)
 
 		# velocity vector is scaled so it can be more easily comprehended
 		drawVector(ball.velocity, ball.pos, 10, False, GREEN, 1)
@@ -215,11 +182,8 @@ def main():
 		# draw ball
 		pygame.draw.circle(DISPLAY, RED, drawPos(ball.pos), int(ball.radius*SCALE), 1)
 
-		if useString:
+		if string.active:
 			pygame.draw.line(DISPLAY, GREEN, drawPos(ball.pos), drawPos(moveData["currentPos"]), 1)
-
-		# draw tension vector
-		drawVector(tensionVector, ball.pos, 10)
 
 		font = pygame.font.SysFont("monospace", 15)
 		# render text
@@ -227,10 +191,8 @@ def main():
 		DISPLAY.blit(fps, (10, 10))
 		ballVelLabel = font.render("Ball velocity: {:.2f}ms-1".format(ball.velocity.mag), 1, BLACK)
 		DISPLAY.blit(ballVelLabel, (10, 30))
-		mouseVelLabel = font.render("Mouse velocity: {:.2f}ms-1".format(mouseVelocity.mag), 1, BLACK)
+		mouseVelLabel = font.render("Mouse velocity: {:.2f}ms-1".format(mouseBall.velocity.mag), 1, BLACK)
 		DISPLAY.blit(mouseVelLabel, (10, 50))
-		antiVelLabel = font.render("Anti-velocity: {:.2f}ms-1".format(antiVelocityVector.mag), 1, BLACK)
-		DISPLAY.blit(antiVelLabel, (10, 70))
 
 		pygame.display.update()
 		CLOCK.tick(120)
