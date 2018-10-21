@@ -3,6 +3,7 @@
 import pygame, math, sys, os
 from colours import *
 from objects import Vector, Ball, Point, String
+from helper import Helper
 
 
 def main():
@@ -22,24 +23,11 @@ def main():
 
 	GRAVITY = 9.81
 
-	def drawPos(pos):
-		return (int(pos.x*SCALE), int((HEIGHT-pos.y)*SCALE))
+	helper = Helper(DISPLAY, SCALE, WIDTH, HEIGHT)
+	drawPos = helper.drawPos
+	worldPos = helper.worldPos
+	drawVector = helper.drawVector
 
-	def worldPos(pos):
-		return (pos.x/SCALE, HEIGHT - pos.y/SCALE)
-
-	def drawVector(v, start, scale=1, showBall=True, colour=PURPLE, width=2):
-		'''
-		Draws a vector, from
-			Vector v
-			Point start
-			float scale
-			bool showBall
-		'''
-		if v.mag > 0:
-			pygame.draw.line(DISPLAY, colour, drawPos(start), drawPos(start + (v/scale).endPos()), width)
-			if showBall:
-				pygame.draw.circle(DISPLAY, colour, drawPos(start+(v/scale).endPos()), 3, 3)
 
 	personImage = pygame.image.load("person.jpg")
 	personRect = personImage.get_rect()
@@ -106,7 +94,6 @@ def main():
 				if (heldKeys[pygame.K_SPACE]):
 					mouseBallDist = moveData["currentPos"].distance(balls[0].pos)
 					if mouseBallDist > 0:
-						print(mouseBallDist)
 						strings[0].length = mouseBallDist
 						strings[0].toggle()
 
