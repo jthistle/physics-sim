@@ -137,7 +137,7 @@ def main():
 		if ball.right >= WIDTH:
 			if ball.velocity.x > 0:
 				ball.accelerate(Vector((-ball.velocity.x-ball.velocity.x*ball.cor, 0)))
-			
+
 		string.applyTension()
 		
 		if moveData["mouseHeld"]:

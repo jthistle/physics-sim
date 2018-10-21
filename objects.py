@@ -250,6 +250,7 @@ class String:
 		self.length = 10
 		self.connections = []
 		self.active = False
+		self.lastCalcDistance = -1
 
 	def setConnections(self, a, b):
 		self.connections = [a, b]
@@ -257,11 +258,11 @@ class String:
 	def applyTension(self):
 		tensionVector = Vector()
 		stringVector = Vector()
-		for i in range(1,2):
+		for i in range(2):
 			a = self.connections[i]
 			b = self.connections[abs(i-1)]
 			connectionDist = a.pos.distance(b.pos)
-			#print("move" if a.moveable else "no")
+			self.lastCalcDistance = connectionDist
 			if connectionDist >= self.length and self.active and a.moveable:
 				# String is taut
 				# We can work out angle between gravity and tension vector
@@ -296,6 +297,7 @@ class String:
 					f = a.mass * tensionVector.mag
 					bAccel = f / b.mass
 					b.accelerate(Vector(bAccel, stringVector.dir))
+				break
 
 		return tensionVector
 
@@ -310,11 +312,9 @@ class String:
 			else:
 				return False
 
-			abDist = a.pos.distance(b.pos)
-			if abDist >= self.length:
-				distanceMod = self.length/abDist
+			if self.lastCalcDistance >= self.length:
+				distanceMod = self.length/self.lastCalcDistance
 				distancePoint = Point(distanceMod*(a.pos.x-b.pos.x), distanceMod*(a.pos.y-b.pos.y))
-				#print(distanceMod)
 				a.setPos(b.pos + distancePoint)
 
 	def toggle(self):
