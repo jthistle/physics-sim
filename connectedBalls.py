@@ -52,15 +52,36 @@ def main():
 
 	ball = Ball()
 	ball.setPos(Point(WIDTH/2, HEIGHT/2))
-	ball2 = Ball()
-	ball2.setPos(Point(WIDTH/2, HEIGHT/4))
-	ball3 = Ball()
-	ball3.setPos(Point(WIDTH/2, HEIGHT/4))
-	balls = [ball, ball2, ball3]
+	balls = [ball]
 
 	ballMouseString = String()
 	ballMouseString.setConnections(mouseBall, ball)
-	ballString1 = String()
+	strings = [ballMouseString]
+	for i in range(5):
+		a = Ball()
+		a.setPos(Point(WIDTH/2, HEIGHT/4))
+		balls.append(a)
+		st = String()
+		st.setConnections(balls[i], balls[i+1])
+		st.length = 0.75
+		st.active = True
+		strings.append(st)
+
+	print(len(balls))
+	print(len(strings))
+
+	'''ball2 = Ball()
+	ball2.setPos(Point(WIDTH/2, HEIGHT/4))
+	#ball2.mass = 0.5
+	balls.append(ball2)
+	ball3 = Ball()
+	ball3.setPos(Point(WIDTH/2, HEIGHT/4))
+	#ball3.mass = 1
+	balls.append(ball3)'''
+	
+
+	
+	'''ballString1 = String()
 	ballString1.setConnections(ball, ball2)
 	ballString1.length = 1
 	ballString1.active = True
@@ -68,7 +89,7 @@ def main():
 	ballString2.setConnections(ball2, ball3)
 	ballString2.length = 1
 	ballString2.active = True
-	strings = [ballMouseString, ballString1, ballString2]
+	strings = [ballMouseString, ballString1, ballString2]'''
 
 	while True:
 		DISPLAY.fill(WHITE)
