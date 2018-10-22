@@ -202,16 +202,21 @@ class Ball:
 		self.radius = 0.1
 		self.cor = 0.8
 		self.moveable = True
+		self.resultant = Vector()
 
 	def accelerate(self, a):
-		self.velocity += a
+		# Old: self.velocity += a
+		# F = ma
+		self.applyForce(a*self.mass)
 
 	def applyForce(self, f):
-		# a = f/m
-		self.accelerate(f/self.mass)
+		self.resultant = self.resultant + f
 
 	def move(self, dt):
+		# a = f/m
+		self.velocity = self.velocity + (self.resultant/self.mass)
 		self.pos += self.velocity.endPos()*dt
+		self.resultant = Vector()
 
 	def translate(self, v):
 		self.pos += v.endPos()
@@ -221,11 +226,6 @@ class Ball:
 
 	def setVelocity(self, v):
 		self.velocity = v
-
-	def __eq__(self, p):
-		if self.x == p.x and self.y == p.y:
-			return True
-		return False
 
 	@property
 	def bottom(self):
@@ -255,15 +255,16 @@ class String:
 	def setConnections(self, a, b):
 		self.connections = [a, b]
 
-	def applyTension(self):
+	def applyTension(self, dt):
+		# Legacy:
 		tensionVector = Vector()
 		stringVector = Vector()
-		for i in range(2):
+		for i in range(1,2):
 			a = self.connections[i]
 			b = self.connections[abs(i-1)]
 			connectionDist = a.pos.distance(b.pos)
 			self.lastCalcDistance = connectionDist
-			if connectionDist >= self.length and self.active and a.moveable:
+			if connectionDist > self.length and self.active and a.moveable:
 				# String is taut
 				# We can work out angle between gravity and tension vector
 				# by creating a temporary vector for the string
@@ -272,32 +273,35 @@ class String:
 				oppositeStringAngle = stringVector.dir - math.pi
 				tensionVector = Vector()
 
-				# calculate tension created by taut string against velocity
-				# away from string pivot
-				aVelMag = a.velocity.mag
-				aVelAngle = a.velocity.dir
-				theta = aVelAngle - stringVector.dir 
-				antiVelocityMag = aVelMag * math.cos(theta)
-				if antiVelocityMag > 0:
-					antiVelocityVector = Vector(antiVelocityMag, oppositeStringAngle)
-					tensionVector = tensionVector + antiVelocityVector
+				# We can treat a taut string as a collision between balls along
+				# the line of the string, i.e. ball a collides with ball b
+				# So, momentum becomes involved.
+				aMomentum = a.velocity * a.mass
+				bMomentum = b.velocity * b.mass
 
-				# do tension created by movement
-				bAccelTensionMag = b.velocity.mag * math.cos(oppositeStringAngle - b.velocity.dir)
-				# this tension acts upon the ball along the oppositeStringAngle angle
-				bAccelTension = Vector(bAccelTensionMag, oppositeStringAngle)
-				tensionVector = tensionVector + bAccelTension
+				# Momentum is conserved:
+				# Av*Am + Bv*Bm = Av'*Am + Bv'*Bm
+				# as is KE:
+				# 0.5*Am*Av^2 + 0.5*Bm*Bv^2 = 0.5*Am*Av'^2 + 0.5*Bm*Bv'^2
+				# therefore
+				# Av' = [(Am - Bm)·Av + 2·Bm·Bv]/(Am + Bm)
+				# and 
+				# Bv' = [2·Am·Av - (Am - Bm)·Bv]/(Am + Bm)
+				am = a.mass
+				bm = b.mass
+				# A and B's velocity in the opposite string direction
+				av = a.velocity.mag * math.cos(a.velocity.dir - stringVector.dir)
+				bv = b.velocity.mag * math.cos(b.velocity.dir - stringVector.dir)
 
-				tensionVector.normalizeDir()
-				a.accelerate(tensionVector)
+				# these are the new velocities in the opposite string direction
+				newAv = ((am-bm)*av + 2*bm*bv)/(am+bm)
+				newBv = (2*am*av - (am-bm)*bv)/(am+bm)
 
+				# so, accelerate by the difference
+				if a.moveable:
+					a.accelerate(Vector(av-newAv, oppositeStringAngle))
 				if b.moveable:
-					# acceleration on b = F/m
-					# F = m of a * acc of a
-					f = a.mass * tensionVector.mag
-					bAccel = f / b.mass
-					b.accelerate(Vector(bAccel, stringVector.dir))
-				break
+					b.accelerate(Vector(bv-newBv, oppositeStringAngle))
 
 		return tensionVector
 

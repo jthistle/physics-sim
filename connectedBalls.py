@@ -163,7 +163,7 @@ def main():
 					ball.accelerate(Vector((-b.velocity.x-b.velocity.x*b.cor, 0)))
 
 		for s in strings:
-			s.applyTension()
+			s.applyTension(deltaT)
 			#drawVector(s.applyTension(), s.connections[1].pos, 1)
 		
 		if moveData["mouseHeld"]:
@@ -207,10 +207,12 @@ def main():
 
 		# velocity vector is scaled so it can be more easily comprehended
 		for b in balls:
+			#break
 			drawVector(b.velocity, b.pos, 10, False, GREEN, 1)
 
 		# draw ball
 		for b in balls:
+			#break
 			pygame.draw.circle(DISPLAY, RED, drawPos(b.pos), int(ball.radius*SCALE), 1)
 
 		for s in strings:
