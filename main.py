@@ -27,7 +27,7 @@ def main():
 	worldPos = helper.worldPos
 	drawVector = helper.drawVector
 
-	personImage = pygame.image.load(os.getcwd()+"person.jpg")
+	personImage = pygame.image.load(os.getcwd()+"/person.jpg")
 	personRect = personImage.get_rect()
 	personImage = pygame.transform.scale(personImage, (int(personRect.width*(int(1.8*SCALE)/personRect.height)), int(1.8*SCALE)))
 

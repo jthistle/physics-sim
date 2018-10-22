@@ -57,7 +57,7 @@ def main():
 	ballMouseString = String()
 	ballMouseString.setConnections(mouseBall, ball)
 	ballMouseString.active = True
-	size = 0.1
+	size = 0.2
 	ballMouseString.length = size
 	strings = [ballMouseString]
 	for i in range(10):
@@ -69,6 +69,8 @@ def main():
 		st.length = size
 		st.active = True
 		strings.append(st)
+
+	drawBalls = False
 
 	print(len(balls))
 	print(len(strings))
@@ -183,6 +185,9 @@ def main():
 			b = balls[i]
 			b.move(deltaT)
 
+			if b.velocity.mag > 10000:
+				b.velocity = Vector()
+
 		for s in strings:
 			s.correctPositions()
 
@@ -210,12 +215,12 @@ def main():
 
 		# velocity vector is scaled so it can be more easily comprehended
 		for b in balls:
-			break
+			if not drawBalls: break
 			drawVector(b.velocity, b.pos, 10, False, GREEN, 1)
 
 		# draw ball
 		for b in balls:
-			break
+			if not drawBalls: break
 			pygame.draw.circle(DISPLAY, RED, drawPos(b.pos), int(ball.radius*SCALE), 1)
 
 		for s in strings:
