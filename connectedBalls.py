@@ -29,7 +29,7 @@ def main():
 	drawVector = helper.drawVector
 
 
-	personImage = pygame.image.load(os.getcwd()+"person.jpg")
+	personImage = pygame.image.load(os.getcwd()+"/person.jpg")
 	personRect = personImage.get_rect()
 	personImage = pygame.transform.scale(personImage, (int(personRect.width*(int(1.8*SCALE)/personRect.height)), int(1.8*SCALE)))
 
@@ -56,14 +56,17 @@ def main():
 
 	ballMouseString = String()
 	ballMouseString.setConnections(mouseBall, ball)
+	ballMouseString.active = True
+	size = 0.1
+	ballMouseString.length = size
 	strings = [ballMouseString]
-	for i in range(5):
+	for i in range(10):
 		a = Ball()
 		a.setPos(Point(WIDTH/2, HEIGHT/4))
 		balls.append(a)
 		st = String()
 		st.setConnections(balls[i], balls[i+1])
-		st.length = 0.75
+		st.length = size
 		st.active = True
 		strings.append(st)
 
@@ -207,12 +210,12 @@ def main():
 
 		# velocity vector is scaled so it can be more easily comprehended
 		for b in balls:
-			#break
+			break
 			drawVector(b.velocity, b.pos, 10, False, GREEN, 1)
 
 		# draw ball
 		for b in balls:
-			#break
+			break
 			pygame.draw.circle(DISPLAY, RED, drawPos(b.pos), int(ball.radius*SCALE), 1)
 
 		for s in strings:
