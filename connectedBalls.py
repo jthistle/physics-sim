@@ -57,10 +57,10 @@ def main():
 	ballMouseString = String()
 	ballMouseString.setConnections(mouseBall, ball)
 	ballMouseString.active = True
-	size = 0.2
+	size = 1
 	ballMouseString.length = size
 	strings = [ballMouseString]
-	for i in range(10):
+	for i in range(1):
 		a = Ball()
 		a.setPos(Point(WIDTH/2, HEIGHT/4))
 		balls.append(a)
@@ -70,7 +70,7 @@ def main():
 		st.active = True
 		strings.append(st)
 
-	drawBalls = False
+	drawBalls = True
 
 	print(len(balls))
 	print(len(strings))
@@ -174,6 +174,7 @@ def main():
 		if moveData["mouseHeld"]:
 			balls[0].setPos(mouseBall.pos)
 			balls[0].setVelocity(mouseBall.velocity)
+			balls[0].setInEquilibrium()
 			balls[0].moveable = False
 		else:
 			balls[0].moveable = True

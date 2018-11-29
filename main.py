@@ -143,6 +143,7 @@ def main():
 				ball.accelerate(Vector((0, -ball.velocity.y-ball.velocity.y*ball.cor)))
 		else:
 			ball.accelerate(Vector((0, -GRAVITY))*deltaT)
+			print(ball.velocity)
 
 		if ball.left <= 0:
 			if ball.velocity.x < 0:
@@ -157,6 +158,7 @@ def main():
 		if moveData["mouseHeld"]:
 			ball.setPos(moveData["currentPos"])
 			ball.setVelocity(mouseBall.velocity)
+			ball.setInEquilibrium()
 		else:
 			ball.move(deltaT)
 

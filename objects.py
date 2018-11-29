@@ -212,6 +212,12 @@ class Ball:
 	def applyForce(self, f):
 		self.resultant = self.resultant + f
 
+	def setResultant(self, f):
+		self.resultant = f
+
+	def setInEquilibrium(self):
+		self.resultant = Vector()
+
 	def move(self, dt):
 		# a = f/m
 		self.velocity = self.velocity + (self.resultant/self.mass)
@@ -259,7 +265,7 @@ class String:
 		# Legacy:
 		tensionVector = Vector()
 		stringVector = Vector()
-		for i in range(1,2):
+		for i in range(1,2):	# only loop through once for now
 			a = self.connections[i]
 			b = self.connections[abs(i-1)]
 			connectionDist = a.pos.distance(b.pos)
