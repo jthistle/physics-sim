@@ -143,7 +143,7 @@ def main():
 				ball.accelerate(Vector((0, -ball.velocity.y-ball.velocity.y*ball.cor)))
 		else:
 			ball.accelerate(Vector((0, -GRAVITY))*deltaT)
-			print(ball.velocity)
+			#print(ball.velocity)
 
 		if ball.left <= 0:
 			if ball.velocity.x < 0:

@@ -301,7 +301,7 @@ class String:
 
 				# these are the new velocities in the opposite string direction
 				newAv = ((am-bm)*av + 2*bm*bv)/(am+bm)
-				newBv = (2*am*av - (am-bm)*bv)/(am+bm)
+				newBv = (2*am*av - (bm-am)*bv)/(am+bm)
 
 				# so, accelerate by the difference
 				if a.moveable:
@@ -330,3 +330,18 @@ class String:
 	def toggle(self):
 		self.active = not self.active
 	
+class Wave:
+	def __init__(self, vel, amp, wlen, pos, length, col):
+		self.velocity = vel
+		self.amplitude = amp
+		self.wavelength = wlen
+		self.pos = pos 	# position of wave front
+		self.length = length
+		self.colour = col
+
+	@property
+	def frequency(self):
+		return self.velocity / self.wavelength
+
+	def move(self, dt):
+		self.pos += Point(self.velocity*dt, 0)
