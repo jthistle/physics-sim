@@ -27,8 +27,8 @@ def main():
 	#Wave(0.25, 0.75, 0.25, Point(SCREEN_CENTRE), 10, GREEN)]
 
 	waves = [
-	Wave(1, 1, 1, Point(SCREEN_CENTRE), 20, RED), 
-	Wave(-1, 1, 1, Point(SCREEN_CENTRE), 20, BLUE)]
+	Wave(1, 1, 0.25, Point(SCREEN_CENTRE), 20, RED), 
+	Wave(1, 1, 0.24, Point(SCREEN_CENTRE), 20, BLUE)]
 
 	hp = Helper(DISPLAY, SCALE, WIDTH, HEIGHT)
 

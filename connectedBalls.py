@@ -2,7 +2,7 @@
 
 import pygame, math, sys, os
 from colours import *
-from objects import Vector, Ball, Point, String
+from objects import Vector, Ball, Point, String, Fraction
 from helper import Helper
 
 
